@@ -1,4 +1,4 @@
-import uploadToCloudinary from "@/lib/uploadCloudinary";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export const config = {
@@ -9,27 +9,62 @@ export const config = {
 
 export async function POST(req) {
   try {
-    const formData = await req.formData();
-    const image =await formData.get("image");
-    const video =await formData.get("video");
-    const title = formData.get("title");
-    const prompt = formData.get("prompt");
-    console.log(image, video, title, prompt);
-    const imageUrl = await uploadToCloudinary(image, "next image");
-    const videoUrl = await uploadToCloudinary(video, "next video");
-    console.log(imageUrl.secure_url, videoUrl.secure_url);
+    const formData = await req.json();
+    const { id, title, prompt, videoUrl, imageUrl, createBy, avatar } =
+      formData;
+    if (!id || !title || !prompt || !videoUrl || !imageUrl || !createBy) {
+      return NextResponse.json(
+        {
+          message: "All Field required",
+        },
+        { status: 400 }
+      );
+    }
+
+    await prisma.posts.create({
+      data: {
+        createBy,
+        userId: id,
+        title,
+        prompt,
+        videoUrl,
+        imageUrl,
+        avatar,
+      },
+    });
 
     return NextResponse.json(
-      { message: "upload succesfully do.." },
+      { message: "Post Creation successful." },
       {
         status: 200,
       }
     );
   } catch (error) {
-    console.error("Error uploading image:", error);
-    return NextResponse.json(
-      { error: "Error uploading image" },
-      { status: 500 }
-    );
+    console.error("Error :", error);
+    return NextResponse.json({ error: "post creation fail" }, { status: 500 });
   }
 }
+
+export const DELETE = async (req) => {
+  try {
+    const body = await req.json();
+    const { userId } = body;
+    const postId = req.nextUrl.searchParams.get("postId");
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "user not found ",
+        },
+        { status: 4000 }
+      );
+    }
+    await prisma.posts.delete({ where: { userId, id: postId } });
+    return NextResponse.json(
+      { message: "post delete successfully done" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.log("error", error);
+    return NextResponse.json({ message: "unknown error" }, { status: 500 });
+  }
+};

@@ -13,11 +13,26 @@ model Users {
   email     String @unique
   password  String
   avatar    String
+  bookmark  Bookmark[]
 }
 model Posts{
   id        String @id @default(auto()) @map("_id") @db.ObjectId
+  avatar    String?
+  createBy  String
+  userId    String
   title     String
   prompt    String
   videoUrl  String
   imageUrl  String
+  bookmark  Bookmark[]
+}
+model Bookmark {
+  id     String    @id @default(auto()) @map("_id")  @db.ObjectId
+  userId String
+  postId String
+
+  user   Users   @relation(fields: [userId], references: [id])
+  post   Posts  @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId]) // Prevents duplicate bookmarks for the same video by the same user
 }
