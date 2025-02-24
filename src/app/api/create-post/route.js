@@ -58,9 +58,11 @@ export const DELETE = async (req) => {
         { status: 4000 }
       );
     }
-    await prisma.posts.delete({ where: { userId, id: postId } });
+    const post = await prisma.posts.delete({
+      where: { userId, id: postId },
+    });
     return NextResponse.json(
-      { message: "post delete successfully done" },
+      { message: "post delete successfully done", post },
       { status: 200 }
     );
   } catch (error) {
