@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export function middleware(req) {
   console.log("API_KEY from env:", process.env.API_KEY); // Log the API_KEY
 
@@ -10,3 +12,7 @@ export function middleware(req) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: "/api/:path*", // Apply to all API routes
+};
